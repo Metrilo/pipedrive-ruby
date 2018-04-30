@@ -15,8 +15,8 @@ module Pipedrive
   class Base < OpenStruct
 
     include HTTParty
-
-    base_uri 'https://api.pipedrive.com/v1'
+    
+    base_uri 'api.pipedrive.com/v1'
     headers HEADERS
     format :json
 
@@ -73,7 +73,7 @@ module Pipedrive
       #
       # @param [HTTParty::Response] response
       def bad_response(response, params={})
-        raise response.inspect
+        puts params.inspect
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
         end
@@ -104,69 +104,18 @@ module Pipedrive
           res['data'] = opts.merge res['data']
           new(res)
         else
-          puts opts.inspect
           bad_response(res,opts)
         end
       end
-
+      
       def find(id)
         res = get "#{resource_path}/#{id}"
         res.ok? ? new(res) : bad_response(res,id)
       end
 
-      def find_by_id(id)
-        res = get "#{resource_path}/#{id}"
-        res.ok? ? new(res) : false
-      end
-
-      def find_or_create_by_id(id, opts = {})
-        find_by_id(id) || create(opts)
-      end
-
-      def update_or_create_by_id(id, opts = {})
-        puts "trying to create or update by (id, opts)"
-        puts id.inspect
-        puts opts.inspect
-        puts "trying to fetch resource by id"
-        res = find_by_id id
-        puts "find_by_id result is:"
-        puts res.inspect
-        if res
-          puts "updating..."
-          res.update(opts)
-        else
-          puts "creating..."
-          create(opts)
-        end
-      end
-
-      def update_or_create_by_email(email, opts = {})
-        res = find_by_email email
-        if res
-          res.update(opts)
-        else
-          create(opts)
-        end
-      end
-
-      def update_or_create_by_name(name, opts = {})
-        res = find_by_name name
-        if res
-          res.update(opts)
-        else
-          create(opts)
-        end
-      end
-
-
       def find_by_name(name, opts={})
         res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
-        res.ok? ? new_list(res).first : false
-      end
-
-      def find_by_email(email, opts={})
-        res = get "#{resource_path}/find", :query => { :term => email, :search_by_email => 1}.merge(opts)
-        res.ok? ? new_list(res).first : false
+        res.ok? ? new_list(res) : bad_response(res,{:name => name}.merge(opts))
       end
 
       def resource_path
