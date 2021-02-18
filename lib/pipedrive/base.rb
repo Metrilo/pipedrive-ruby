@@ -73,7 +73,6 @@ module Pipedrive
       #
       # @param [HTTParty::Response] response
       def bad_response(response, params={})
-        puts params.inspect
         if response.class == HTTParty::Response
           raise HTTParty::ResponseError, response
         end
@@ -81,7 +80,9 @@ module Pipedrive
       end
 
       def new_list( attrs )
-        attrs['data']['items'].is_a?(Array) ? attrs['data']['items'].map {|data| self.new( 'data' => data['item'] ) } : []
+        return [] unless attrs['data']['items'].is_a?(Array)
+
+        attrs['data']['items'].map {|data| self.new( 'data' => data['item'] ) }
       end
 
       def all(response = nil, options={},get_absolutely_all=false)
