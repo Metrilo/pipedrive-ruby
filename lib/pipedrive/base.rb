@@ -81,7 +81,7 @@ module Pipedrive
       end
 
       def new_list( attrs )
-        attrs['data'].is_a?(Array) ? attrs['data'].map {|data| self.new( 'data' => data ) } : []
+        attrs['data']['items'].is_a?(Array) ? attrs['data']['items'].map {|data| self.new( 'data' => data['item'] ) } : []
       end
 
       def all(response = nil, options={},get_absolutely_all=false)
@@ -114,7 +114,7 @@ module Pipedrive
       end
 
       def find_by_name(name, opts={})
-        res = get "#{resource_path}/find", :query => { :term => name }.merge(opts)
+        res = get "#{resource_path}/search", :query => { :term => name }.merge(opts)
         res.ok? ? new_list(res) : bad_response(res,{:name => name}.merge(opts))
       end
 
